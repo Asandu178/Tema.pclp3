@@ -79,6 +79,23 @@ transform = scaler.fit_transform(df_encoded[['turns', 'white_rating', 'black_rat
 
 df_encoded[['turns', 'white_rating', 'black_rating', 'age', 'num_moves', 'initial_time', 'increment_sec']] = transform
 
-print(df_encoded.head())
-print(df_encoded.columns)
-print(length)
+# separarea datelor
+
+X = df_encoded.drop(columns=['winner', 'victory_status'])
+y = df_encoded[['winner', 'victory_status']]
+
+# Împărțim datele: 80% pentru antrenament, 20% pentru test
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# creez dataframe-urile pt train si test
+train = pd.concat([X_train, y_train], axis=1)
+test = pd.concat([X_test, y_test], axis=1)
+
+# creez csv-urile
+
+train.to_csv("train_data.csv", index=False)
+test.to_csv("test_data.csv", index=False)
+
+print(df_encoded.describe())

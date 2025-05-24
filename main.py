@@ -1,6 +1,8 @@
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+import math
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 # librarie pentru a genera date false
@@ -73,7 +75,7 @@ print(df.describe())
 # max      349.000000         3.00000      2.000000   2700.000000   2723.000000    180.000000     180.000000     64.000000
 
 # observatie, am analizat direct dataset-ul mare, pentru a incerca sa intuim aproximarile finale
-# observam ca numarul mediu de mutari este 60, avem totusi si meciuri aberant de lungi(maxim 349) pe care le vom elimina
+# observam ca numarul mediu de mutari este 60, avem totusi si meciuri aberant de lungi(maxim 349)
 # media pentru statutul de victory este 0.85 deci tendinta este ca un meci sa se termine fie in mat sau capitulare
 # rating-ul pentru jucatori este in jur de 1590, exista o disperie mare(jucatori intre 784-2700)
 # media timpului(minute) este de 13 minute
@@ -82,7 +84,62 @@ print(df.describe())
 # tendinta generala arata ca meciurile se termina intr-o victorie a jucatorului alt ca rezultat al mediei 1.4
 # alb - 1, negru - 2, egal - 0
 
+# construiesc histogramele pentru tipurile numerice
+# caut in dataset coloanele cu valori numerice si formez o lista cu acestea
+num_cols = df.select_dtypes(include=['number']).columns.tolist()
 
+fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(15, 12))
+axes = axes.flatten()
+
+for i, col in enumerate(num_cols):
+    axes[i].hist(df[col], bins=30, color='skyblue', edgecolor='black')
+    axes[i].set_title(f'Histogramă pentru {col}')
+    axes[i].set_xlabel(col)
+    axes[i].set_ylabel('Number of games')
+
+# sterg ploturile goale care apar
+for j in range(i+1, len(axes)):
+    fig.delaxes(axes[j])
+
+plt.tight_layout()
+plt.savefig('histograme.png')  # salvează figura în fișier
+
+# caut in dataset coloanele cu valori categorice si formez o lista cu acestea
+num_cols_categorice = df.select_dtypes(include=['object']).columns.tolist()
+
+fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(15, 12))
+axes = axes.flatten()
+
+for i, col in enumerate(num_cols_categorice):
+    # ma limitez la cele mai mari 10 valori din fiecare categorie(fiindca am multe nationalitati,opening-uri si coduri de incepere)
+    counts = df[col].value_counts().head(10)
+    axes[i].bar(counts.index, counts.values, color='skyblue')
+    axes[i].set_title(f'Barplot pentru {col}')
+    axes[i].set_xlabel(col)
+    axes[i].set_ylabel('Număr de apariții')
+    # rotesc etichetele ca sa nu se suprapuna
+    axes[i].tick_params(axis='x', rotation=45)
+
+# sterg plot-urile goale care apar
+for j in range(i+1, len(axes)):
+    fig.delaxes(axes[j])
+
+
+plt.tight_layout()
+
+# salvez img
+plt.savefig('categorical_barplots.png')
+
+num_cols = df.select_dtypes(include=['number']).columns
+
+# calculăm matricea de corelații
+corr_matrix = df[num_cols].corr()
+
+# afișăm heatmap
+plt.figure(figsize=(14,14))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', cbar=True)
+plt.title('Matricea de corelații pentru variabilele numerice')
+plt.savefig('heatmap.png')
 # preprocesare
 
 # aplic one-hot encoding pentru rated, opening_shortname, nationality, opening_code

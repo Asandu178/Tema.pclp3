@@ -93,7 +93,7 @@ axes = axes.flatten()
 
 for i, col in enumerate(num_cols):
     axes[i].hist(df[col], bins=30, color='skyblue', edgecolor='black')
-    axes[i].set_title(f'Histogramă pentru {col}')
+    axes[i].set_title(f'Histograma pentru {col}')
     axes[i].set_xlabel(col)
     axes[i].set_ylabel('Number of games')
 
@@ -116,7 +116,7 @@ for i, col in enumerate(num_cols_categorice):
     axes[i].bar(counts.index, counts.values, color='skyblue')
     axes[i].set_title(f'Barplot pentru {col}')
     axes[i].set_xlabel(col)
-    axes[i].set_ylabel('Număr de apariții')
+    axes[i].set_ylabel('Numar de aparitii')
     # rotesc etichetele ca sa nu se suprapuna
     axes[i].tick_params(axis='x', rotation=45)
 
@@ -138,7 +138,7 @@ corr_matrix = df[num_cols].corr()
 # afișăm heatmap
 plt.figure(figsize=(14,14))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', cbar=True)
-plt.title('Matricea de corelații pentru variabilele numerice')
+plt.title('Matricea de corelatii pentru variabilele numerice')
 plt.savefig('heatmap.png')
 
 # din analiza heatmap-ului observam ca nu exista o legatura intre varsta si castigator,
@@ -147,6 +147,63 @@ plt.savefig('heatmap.png')
 # jucatorii sunt plasati in meciuri cu oponenti de un nivel similar
 # observam ca exista o legatura slaba intre cine castiga si modul de castig
 
+plt.figure(figsize=(8, 6))
+
+# Scatter plot cu 3 clase: 0=draw, 1=white win, 2=black win
+sns.scatterplot(
+    data=df,
+    x='white_rating',
+    y='black_rating',
+    hue='winner',
+    palette='coolwarm',
+    style='winner',
+    markers={0: 'o', 1: 's', 2: 'X'},
+    s=50
+)
+
+plt.title("Scatter Plot intre white_rating și black_rating (Winner)")
+plt.xlabel('White Rating')
+plt.ylabel('Black Rating')
+plt.legend(title="Castigator", loc='best')
+plt.tight_layout()
+
+# Salveaz imaginea
+plt.savefig("Castigator.png")
+# tendinta generala este ca la nivel inalt negru si alb castiga cam la fel de mult,la egalitate cu sansa de a se termina
+# in egal meciul
+# pentru nivelurile de joc sub 2000 rating, tendinta este ca meciurile sa se termina fie in win/lose, aproape niciodata in egal,
+# unde in continuare alb la nivel egal de rating are un avantaj
+
+
+plt.figure(figsize=(8, 6))
+
+# Scatter plot cu 4 clase : Mat = 0, Resign = 1, Out of time = 2, Draw = 3
+sns.scatterplot(
+    data=df,
+    x='white_rating',
+    y='black_rating',
+    hue='victory_status',
+    palette='coolwarm',
+    style='victory_status',
+    markers={0: 'o', 1: 's', 2: 'X', 3: '*'},
+    s=50,
+    alpha=0.6
+)
+
+plt.title("Scatter Plot între white_rating și black_rating (Win_con)")
+plt.xlabel('White Rating')
+plt.ylabel('Black Rating')
+plt.legend(title="Win_con", loc='best')
+plt.tight_layout()
+
+# Salveaz imaginea
+plt.savefig("Mod_de_castig.png")
+
+# observam ca la nivel inalt majoritatea meciurilor se termina in resign
+# sau egalitate,dar si pierderea prin lipsa de timp este frecventa,comparativ cu
+# incheierea meciului prin mat
+# in schimb pentru restul jucatorilor, majoritatea meciurilor se termina prin
+# resign sau mat
 
 
 
@@ -189,3 +246,5 @@ test = pd.concat([X_test, y_test], axis=1)
 
 train.to_csv("train_data.csv", index=False)
 test.to_csv("test_data.csv", index=False)
+
+

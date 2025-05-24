@@ -140,6 +140,16 @@ plt.figure(figsize=(14,14))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', cbar=True)
 plt.title('Matricea de corelații pentru variabilele numerice')
 plt.savefig('heatmap.png')
+
+# din analiza heatmap-ului observam ca nu exista o legatura intre varsta si castigator,
+# deoarece varsta este generata aleatoriu in model
+# exista o legatura liniara moderata, de unde reiese faptul ca in general
+# jucatorii sunt plasati in meciuri cu oponenti de un nivel similar
+# observam ca exista o legatura slaba intre cine castiga si modul de castig
+
+
+
+
 # preprocesare
 
 # aplic one-hot encoding pentru rated, opening_shortname, nationality, opening_code

@@ -5,6 +5,8 @@ import seaborn as sns
 import math
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.multioutput import MultiOutputClassifier
 # librarie pentru a genera date false
 from faker import Faker
 
@@ -205,7 +207,12 @@ plt.savefig("Mod_de_castig.png")
 # in schimb pentru restul jucatorilor, majoritatea meciurilor se termina prin
 # resign sau mat
 
-
+plt.figure(figsize=(8,6))
+sns.scatterplot(data=df, x='white_rating', y='turns', hue='winner', palette='coolwarm')
+plt.title("White rating vs numărul de mutări")
+plt.savefig("rating&turns.png")
+# observam ca odata cu cresterea rating-ului, creste si numarul de mutari facute de jucator
+# intuim cu usurinta ca acest lucru se datoreaza atat experientei jucatorului analizat,dar si a oponentului acestuia
 
 # preprocesare
 
@@ -235,8 +242,51 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-print(f"Dimensiunea setului de antrenament: {X_train.shape}")
-print(f"Dimensiunea setului de test: {X_test.shape}")
+print("Setul de antrenament X:", X_train.shape)
+print("Setul de test X:", X_test.shape)
+print("Setul de antrenament y:", y_train.shape)
+print("Setul de test y:", y_test.shape)
+
+model_baza = LogisticRegression(max_iter=1000, random_state=42)
+model_final = MultiOutputClassifier(model_baza)
+
+model_final.fit(X_train, y_train)
+
+y_pred = model_final.predict(X_test)
+
+# Vedem primele 5 predicții
+print("Predicții:", y_pred[:5])
+# construiesc y_test_array de forma matriceala ca sa pot compara cele 2 output-uri corect
+y_test_array = y_test.to_numpy()
+print("Adevărate:", y_test_array[:5])
+
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+
+cm_winner = confusion_matrix(y_test['winner'], y_pred[:, 0])
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm_winner, annot=True, fmt='d', cmap='Blues')
+plt.title("Matricea de confuzie pentru Winner")
+plt.xlabel('Predicții')
+plt.ylabel('Realitate')
+plt.savefig("Confusion_matrix_winner.png")
+
+# pentru victory_status
+cm_victory = confusion_matrix(y_test['victory_status'], y_pred[:, 1])
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm_victory, annot=True, fmt='d', cmap='Blues')
+plt.title("Matricea de confuzie pentru Victory Status")
+plt.xlabel('Predicții')
+plt.ylabel('Realitate')
+plt.savefig("Confusion_matrix_victory.png")
+
+# calculez scorul de acuratete pt fiecare categorie in parte
+acc_winner = accuracy_score(y_test['winner'], y_pred[:, 0])
+acc_victory = accuracy_score(y_test['victory_status'], y_pred[:, 1])
+
+print(f"Acuratețe winner: {acc_winner:.4f}")
+print(f"Acuratețe victory_status: {acc_victory:.4f}")
+
 
 # creez dataframe-urile pt train si test
 train = pd.concat([X_train, y_train], axis=1)

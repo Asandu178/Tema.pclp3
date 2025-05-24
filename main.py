@@ -39,6 +39,10 @@ df['num_moves'] = df['moves'].str.split().apply(len)
 
 df = df.drop(columns=['moves'])
 
+# din moment ce ar fi mai greu sa lucrez direct pe time_increment il sparg in 2
+df[['initial_time', 'increment_sec']] = df['time_increment'].str.split('+', expand=True).astype(int)
+
+df = df.drop(columns=['time_increment'])
 # gasesc lungimea dataframe-ului
 length = len(df)
 
@@ -68,15 +72,12 @@ encoder = LabelEncoder()
 # label-encoding pt sex
 df_encoded['gender'] = encoder.fit_transform(df_encoded['gender'])
 
-# normalizarea variabilelor numerice
-scaler = MinMaxScaler()
-
-df_encoded[['turns', 'white_rating', 'black_rating', 'age', 'num_moves']] = scaler.fit_transform(df_encoded[['turns', 'white_rating', 'black_rating', 'age', 'num_moves']])
-
 # standardizarea variabilelor
 scaler = StandardScaler()
 
-df_encoded[['turns', 'white_rating', 'black_rating', 'age', 'num_moves']] = scaler.fit_transform(df_encoded[['turns', 'white_rating', 'black_rating', 'age', 'num_moves']])
+transform = scaler.fit_transform(df_encoded[['turns', 'white_rating', 'black_rating', 'age', 'num_moves', 'initial_time', 'increment_sec']])
+
+df_encoded[['turns', 'white_rating', 'black_rating', 'age', 'num_moves', 'initial_time', 'increment_sec']] = transform
 
 print(df_encoded.head())
 print(df_encoded.columns)
